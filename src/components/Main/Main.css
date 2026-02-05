@@ -397,3 +397,13 @@
         height: 24px;
     }
 }
+
+.main .bottom-info {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 10px;
+    padding: 0 20px;
+    transition: color 0.3s ease;
+}

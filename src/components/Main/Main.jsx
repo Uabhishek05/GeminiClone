@@ -1,17 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useContext} from 'react'
 import './Main.css'
 import { assets } from '../../assets/assets'
 import { useTheme } from '../../context/ThemeContext'
+import { Context } from '../../context/Context.jsx'
+
 const Main = () => {
+  // const contextRef = useContext(Context); // Removed unused variable
+ 
+  const { onSent, recentPrompt, showResults, loading, resultData, setInput, input } = useContext(Context) // Destructure only the used values from Context
   const cardRefs = useRef([])
   const [prompt, setPrompt] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const recognitionRef = useRef(null)
   const finalTranscriptRef = useRef('')
   const { isDarkMode, toggleTheme } = useTheme()
+  // Removed unused destructured values from Context
   
   useEffect(() => {
-    // #region agent log
     cardRefs.current.forEach((card, index) => {
       if (card) {
         const cardRect = card.getBoundingClientRect()
@@ -19,16 +24,11 @@ const Main = () => {
         const text = card.querySelector('p')
         const iconRect = icon?.getBoundingClientRect()
         const textRect = text?.getBoundingClientRect()
-        fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:useEffect',message:'Card dimensions',data:{cardIndex:index,cardHeight:cardRect.height,cardWidth:cardRect.width,iconBottom:iconRect?cardRect.bottom-iconRect.bottom:null,iconRight:iconRect?cardRect.right-iconRect.right:null,textHeight:textRect?.height,iconWidth:iconRect?.width,iconHeight:iconRect?.height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{})
       }
     })
-    // #endregion
 
     // Initialize Speech Recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:useEffect',message:'Speech Recognition initialization',data:{speechRecognitionAvailable:!!SpeechRecognition,webkitAvailable:!!window.webkitSpeechRecognition},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{})
-    // #endregion
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition()
@@ -37,9 +37,6 @@ const Main = () => {
       recognition.lang = 'en-US'
 
       recognition.onstart = () => {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:recognition.onstart',message:'Speech recognition started',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{})
-        // #endregion
         finalTranscriptRef.current = prompt
         setIsRecording(true)
       }
@@ -57,24 +54,15 @@ const Main = () => {
             interimTranscript += transcript
           }
         }
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:recognition.onresult',message:'Speech recognition result',data:{interimTranscript,finalTranscript,resultCount:event.results.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{})
-        // #endregion
         setPrompt(finalTranscriptRef.current + interimTranscript)
       }
 
       recognition.onerror = (event) => {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:recognition.onerror',message:'Speech recognition error',data:{error:event.error,errorMessage:event.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{})
-        // #endregion
         console.error('Speech recognition error:', event.error)
         setIsRecording(false)
       }
 
       recognition.onend = () => {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:recognition.onend',message:'Speech recognition ended',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{})
-        // #endregion
         setIsRecording(false)
       }
 
@@ -90,20 +78,14 @@ const Main = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:handleSubmit',message:'Prompt submitted',data:{prompt:prompt,promptLength:prompt.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{})
-    // #endregion
-    if (prompt.trim()) {
-      console.log('Prompt:', prompt)
-      // TODO: Handle prompt submission (API call, etc.)
+    if (input.trim()) {
+      onSent(input)
+      setInput('')
       setPrompt('')
     }
   }
 
   const toggleRecording = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/bcd97780-f120-43fe-bcad-5deb90f59b98',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Main.jsx:toggleRecording',message:'Toggle recording clicked',data:{isRecording,recognitionAvailable:!!recognitionRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{})
-    // #endregion
     
     if (!recognitionRef.current) {
       alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.')
@@ -156,8 +138,8 @@ const Main = () => {
                     <input 
                         type="text" 
                         placeholder="Ask Gemini" 
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
                         className="search-input"
                     />
                     <div className="search-icons">
@@ -170,14 +152,17 @@ const Main = () => {
                         />
                         <img 
                             src={assets.send_icon} 
-                            alt="Send" 
+                            alt="Sent" 
                             className="search-icon send-icon"
-                            onClick={handleSubmit}
-                            style={{ opacity: prompt.trim() ? 1 : 0.5, cursor: prompt.trim() ? 'pointer' : 'default' }}
+                            onClick={() => onSent(input)}
+                            style={{ opacity: input.trim() ? 1 : 0.5, cursor: input.trim() ? 'pointer' : 'default' }}
                         />
                     </div>
                 </form>
             </div>
+            <p className='bottom-info'>
+                    Gemini may display inaccurate info, including about people, so double-check its responses. Your privacy and Gemini Apps
+                </p>
          </div>
     </div>
   )
