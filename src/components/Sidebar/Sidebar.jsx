@@ -2,8 +2,8 @@ import React from 'react'
 
 const Sidebar = () => {
   return (
-    <div> classname='sidebar'
-
+    <div className='sidebar'>
+      
     </div>
   )
 }
