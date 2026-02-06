@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "REDACTED";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "REDACTED";
 
 import { GoogleGenAI } from "@google/genai";
 
