@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "REDACTED";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyCWi_j4eoRMGvWuhSSguEygmtVOa1YVoMk";
 
 import { GoogleGenAI } from "@google/genai";
 
@@ -6,30 +6,36 @@ const ai = new GoogleGenAI({
   apiKey: GEMINI_API_KEY
 });
 
-async function generateResponse(userQuestion) {
+async function generateResponse(payload) {
+  let contents = payload;
+
+  if (payload && typeof payload === "object") {
+    const parts = [];
+    if (payload.text) {
+      parts.push({ text: payload.text });
+    }
+
+    if (Array.isArray(payload.attachments)) {
+      payload.attachments.forEach((attachment) => {
+        if (attachment?.data && attachment?.type) {
+          parts.push({
+            inlineData: {
+              data: attachment.data,
+              mimeType: attachment.type
+            }
+          });
+        }
+      });
+    }
+
+    contents = parts.length ? parts : payload.text || "";
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: userQuestion,
+    contents,
   });
-  console.log("Question:", userQuestion);
-  console.log("Response:", response.text);
   return response.text;
 }
-
-async function main() {
-  // Example usage with different questions
-  const questions = [
-    // "Explain how AI works in a few words",
-    // "What is machine learning?",
-    // "How does deep learning work?"
-  ];
-
-  for (const question of questions) {
-    await generateResponse(question);
-    console.log("---");
-  }
-}
-
-await main();
 
 export default generateResponse;

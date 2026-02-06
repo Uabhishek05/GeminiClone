@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&display=swap');
 
 :root {
   --bg-primary: #ffffff;
@@ -30,12 +30,13 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: Outfit;
+  font-family: "Outfit", system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
